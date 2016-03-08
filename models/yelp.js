@@ -1,14 +1,14 @@
 // used to send http requests
 // used to manage control flow
 // used to create hashes that fingerprint a given request
-const yelp_client = require('yelp')
+const YelpClient = require('yelp')
 const proj4 = require('proj4')
 const proj = proj4('GOOGLE', 'WGS84')
 const config = require('config')
 const _ = require('lodash')
 const Yelp = function (koop) {
   var yelp = {}
-  const client = yelp_client.createClient(config.yelp)
+  const client = new YelpClient(config.yelp)
   yelp.search = function (query, callback) {
     getFromYelp(query, function (err, rawResponse) {
       if (err) return callback(err)
