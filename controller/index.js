@@ -8,6 +8,7 @@ const Controller = function (yelp, createBaseController) {
   // use the shared code in the BaseController to create a feature service
   controller.featureServer = function (req, res) {
     const callback = req.query.callback
+    delete req.query.callback
 
     // need to always respond with a count greater than the max count of 1000
     // that way the JS API will have to ask for bounding boxes
