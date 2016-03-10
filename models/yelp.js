@@ -20,9 +20,7 @@ const Yelp = function (koop) {
   function getFromYelp (options, callback) {
     // simple wrapper around requests to the desired API
     const query = buildQuery(options)
-    console.log(query)
     client.search(query, function (err, data) {
-      console.log(data)
       callback(err, data)
     })
   }

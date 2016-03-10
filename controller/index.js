@@ -7,15 +7,12 @@ const Controller = function (yelp, createBaseController) {
 
   // use the shared code in the BaseController to create a feature service
   controller.featureServer = function (req, res) {
-    const callback = req.query.callback
-    delete req.query.callback
-
     // need to always respond with a count greater than the max count of 1000
     // that way the JS API will have to ask for bounding boxes
     if (req.query.returnCountOnly === 'true') return res.send({count: 1001})
     yelp.search(req.query, function (err, geojson) {
       if (err) return res.status(500).send(err)
-      controller.processFeatureServer(req, res, err, geojson, callback)
+      controller.processFeatureServer(req, res, geojson)
     })
   }
 
