@@ -28,7 +28,7 @@ const Yelp = function (koop) {
   function buildQuery (options) {
     // create a a default set of parameters for the API call
     // fill in passed in parameters where available
-    const query = _.cloneDeep(options)
+    const query = _.omit(_.cloneDeep(options), 'callback')
     if (options.geometry) {
       const bbox = JSON.parse(options.geometry)
       query.bounds = proj.forward([bbox.xmin, bbox.ymin]).reverse().toString() + '|' + proj.forward([bbox.xmax, bbox.ymax]).reverse().toString()
