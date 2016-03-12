@@ -21,7 +21,7 @@ const Yelp = function (koop) {
 
     function search (query, callback) {
       searchYelp(query, function (err, features) {
-        if (err) return callback(err)
+        if (err) return callback()
         featureCollection.features = featureCollection.features.concat(features)
         callback()
       })
@@ -43,7 +43,7 @@ const Yelp = function (koop) {
 
   function buildQueries (options) {
     if (options.geometry) {
-      const geometries = splitGeometry(options.geometry)
+      const geometries = splitGeometry(JSON.parse(options.geometry))
       return geometries.map(geometry => buildQuery(options, geometry))
     } else {
       return [buildQuery(options)]
