@@ -1,3 +1,4 @@
+'use strict'
 const YelpClient = require('yelp')
 const proj4 = require('proj4')
 const proj = proj4('GOOGLE', 'WGS84')
@@ -28,6 +29,7 @@ const Yelp = function (koop) {
     }
 
     function finish (err) {
+      console.log(featureCollection.features.length)
       callback(err, featureCollection)
     }
   }
@@ -42,12 +44,19 @@ const Yelp = function (koop) {
   }
 
   function buildQueries (options) {
+    let queries
     if (options.geometry) {
       const geometries = splitGeometry(JSON.parse(options.geometry))
-      return geometries.map(geometry => buildQuery(options, geometry))
+      queries = geometries.map(geometry => buildQuery(options, geometry))
     } else {
-      return [buildQuery(options)]
+      queries = [buildQuery(options)]
     }
+    const offsets = queries.map(query => {
+      const q = _.cloneDeep(query)
+      q.offset = 20
+      return q
+    })
+    return queries.concat(offsets)
   }
 
   // Translate a request from the GeoServices API into something Yelp will understand
