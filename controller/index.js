@@ -1,4 +1,4 @@
-const Controller = function (yelp, createBaseController) {
+module.exports = function (yelp, createBaseController) {
   const controller = createBaseController()
   // respond to the root route
   controller.index = function (req, res) {
@@ -24,5 +24,3 @@ const Controller = function (yelp, createBaseController) {
   // return the controller so it can be used by koop
   return controller
 }
-
-module.exports = Controller

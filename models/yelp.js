@@ -5,7 +5,7 @@ const proj = proj4('GOOGLE', 'WGS84')
 const config = require('config')
 const _ = require('lodash')
 const async = require('async')
-const Yelp = function (koop) {
+module.exports = function (koop) {
   var yelp = {}
 
   const client = new YelpClient(config.yelp)
@@ -29,7 +29,6 @@ const Yelp = function (koop) {
     }
 
     function finish (err) {
-      console.log(featureCollection.features.length)
       callback(err, featureCollection)
     }
   }
@@ -39,6 +38,7 @@ const Yelp = function (koop) {
     client.search(query, function (err, rawResponse) {
       if (err) return callback(err)
       const features = translate(rawResponse)
+      console.log('Search returned', features.length, results)
       callback(null, features)
     })
   }
@@ -144,43 +144,23 @@ const Yelp = function (koop) {
 
 function splitGeometry (bbox) {
   return [
-    bottomLeft(bbox),
-    bottomRight(bbox),
-    topLeft(bbox),
-    topRight(bbox)
+    bottomHalf(bbox),
+    topHalf(bbox),
   ]
 }
 
-function bottomLeft (bbox) {
+function bottomHalf (bbox) {
   return {
     xmin: bbox.xmin,
     ymin: bbox.ymin,
-    xmax: avgOf2(bbox.xmin, bbox.xmax),
+    xmax: bbox.xmax,
     ymax: avgOf2(bbox.ymin, bbox.ymax)
   }
 }
 
-function bottomRight (bbox) {
-  return {
-    xmin: avgOf2(bbox.xmin, bbox.xmax),
-    ymin: bbox.ymin,
-    xmax: bbox.ymax,
-    ymax: avgOf2(bbox.ymin, bbox.ymax)
-  }
-}
-
-function topLeft (bbox) {
+function topHalf (bbox) {
   return {
     xmin: bbox.xmin,
-    ymin: avgOf2(bbox.ymin, bbox.ymax),
-    xmax: avgOf2(bbox.xmin, bbox.xmax),
-    ymax: bbox.ymax
-  }
-}
-
-function topRight (bbox) {
-  return {
-    xmin: avgOf2(bbox.xmin, bbox.xmax),
     ymin: avgOf2(bbox.ymin, bbox.ymax),
     xmax: bbox.xmax,
     ymax: bbox.ymax
@@ -190,4 +170,3 @@ function topRight (bbox) {
 function avgOf2 (a, b) {
   return (a + b) / 2
 }
-module.exports = Yelp
