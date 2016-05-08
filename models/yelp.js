@@ -38,7 +38,7 @@ module.exports = function (koop) {
     client.search(query, function (err, rawResponse) {
       if (err) return callback(err)
       const features = translate(rawResponse)
-      console.log('Search returned', features.length, results)
+      console.log('Search returned', features.length, 'results')
       callback(null, features)
     })
   }
