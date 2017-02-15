@@ -1,0 +1,8 @@
+{
+  "yelp": {
+    "token": "YELP_TOKEN",
+    "token_secret": "YELP_TOKEN_SECRET",
+    "consumer_key": "YELP_CONSUMER_KEY",
+    "consumer_secret": "YELP_CONSUMER_SECRET"
+  }
+}

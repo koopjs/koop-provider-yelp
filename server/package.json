@@ -1,0 +1,14 @@
+{
+  "name": "koop-yelp-server",
+  "version": "1.0.0",
+  "description": "A reference implementation of Koop Yelp",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Daniel Fenton <dfenton@esri.com>",
+  "license": "Apache-2.0",
+  "dependencies": {
+    "koop": "^3.1.1"
+  }
+}
