@@ -12,7 +12,7 @@
     "test": "mocha test/"
   },
   "dependencies": {
-    "async": "^1.5.2",
+    "async": "^2.5.0",
     "config": "^1.25.1",
     "lodash": "^4.17.4",
     "proj4": "^2.3.17",
@@ -21,9 +21,9 @@
   "author": "Daniel Fenton",
   "license": "BSD-2-Clause",
   "devDependencies": {
-    "supertest": "~0.11.0",
-    "should": "~4.0.4",
-    "sinon": "~1.10.3"
+    "supertest": "~3.0.0",
+    "should": "~11.2.1",
+    "sinon": "~3.2.0"
   },
   "repository": {
     "type": "git",
