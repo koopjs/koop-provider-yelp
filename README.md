@@ -1,5 +1,7 @@
 # Koop Provider Yelp
 
+[![Greenkeeper badge](https://badges.greenkeeper.io/koopjs/koop-provider-yelp.svg)](https://greenkeeper.io/)
+
 This is a pass-through type provider for [Koop](https://koopjs.github.io). It proxies the Yelp API up to 40 places at a time and translates the response to GeoJSON.
 
 ## API
