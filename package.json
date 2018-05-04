@@ -9,7 +9,8 @@
   "scripts": {
     "docker-build": "docker build -t koop-yelp .",
     "docker-start": "docker run -it -p 8080:8080 koop-yelp",
-    "test": "mocha test/"
+    "test": "mocha test/",
+    "start": "node server.js"
   },
   "dependencies": {
     "async": "^1.5.2",

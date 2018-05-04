@@ -10,6 +10,9 @@ const client = new YelpClient(config.yelp)
 
 module.exports = function (koop) {
   this.getData = function (req, callback) {
+    if (req.query.returnCountOnly) {
+      return callback(null, {type: 'FeatureCollection', count: 2001, features: []})
+    }
     const queries = buildQueries(req.query)
     const featureCollection = {
       type: 'FeatureCollection',
