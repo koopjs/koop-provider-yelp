@@ -186,7 +186,7 @@ function translate(data, term) {
     });
   }
   // else:
-  console.error("NO FEATURES");
+  return [];
 }
 
 // This function takes a single element from the yelp response and translates it to GeoJSON
