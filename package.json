@@ -1,39 +1,44 @@
 {
-  "name": "koop-yelp",
-  "version": "0.0.2",
-  "description": "A Yelp provider for koop ",
-  "main": "index.js",
-  "directories": {
-    "test": "test"
-  },
+  "name": "@koopjs/provider-yelp",
+  "version": "1.0.0",
+  "description": "Yelp provider for koop",
+  "main": "src/index.js",
   "scripts": {
-    "docker-build": "docker build -t koop-yelp .",
-    "docker-start": "docker run -it -p 8080:8080 koop-yelp",
-    "test": "mocha test/",
-    "start": "node server.js"
+    "test": "npm run lint && mocha --timeout 5000",
+    "start": "koop serve --debug --watch",
+    "lint": "npm run prettier-check && npm run eslint",
+    "prettier-check": "prettier --check .",
+    "prettier-write": "prettier --write .",
+    "eslint": "eslint ."
   },
   "dependencies": {
     "async": "^1.5.2",
-    "config": "^1.25.1",
-    "lodash": "^4.17.4",
+    "config": "^3.3.1",
     "proj4": "^2.3.17",
-    "yelp": "^1.0.2"
+    "lodash": "^4.17.20",
+    "node-fetch": "^2.6.1",
+    "yelp-fusion": "^3.0.0"
   },
-  "author": "Daniel Fenton",
-  "license": "BSD-2-Clause",
   "devDependencies": {
-    "supertest": "~0.11.0",
-    "should": "~4.0.4",
-    "sinon": "~1.10.3"
+    "@koopjs/cli": "^0.7.0",
+    "chai": "^4.2.0",
+    "eslint": "^7.8.1",
+    "eslint-config-prettier": "^6.11.0",
+    "lint-staged": "^10.3.0",
+    "mocha": "^8.1.3",
+    "nock": "^13.0.4",
+    "prettier": "2.1.1"
   },
+  "author": "Gavin Rehkemper",
+  "license": "Apache",
   "repository": {
     "type": "git",
-    "url": "https://github.com:koopjs/koop-yelp.git"
+    "url": "https://github.com:koopjs/koop-provider-yelp.git"
   },
   "bugs": {
-    "url": "https://github.com/koopjs/koop-yelp/issues"
+    "url": "https://github.com/koopjs/koop-provider-yelp/issues"
   },
-  "homepage": "https://github.com/koopjs/koop-zillow",
+  "homepage": "https://github.com/koopjs/koop-provider-yelp",
   "keywords": [
     "koop",
     "yelp",
