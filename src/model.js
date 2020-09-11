@@ -184,9 +184,9 @@ function translate(data, term) {
     return data.businesses.map((business) => {
       return formatFeature(business, term);
     });
-  } else {
-    console.error("NO FEATURES");
   }
+  // else:
+  console.error("NO FEATURES");
 }
 
 // This function takes a single element from the yelp response and translates it to GeoJSON
