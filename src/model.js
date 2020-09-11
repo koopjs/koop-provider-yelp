@@ -16,7 +16,7 @@ function Model() {}
 // each model should have a getData() function to fetch the geo data
 // and format it into a geojson
 Model.prototype.getData = function (req, callback) {
-  if (req.query && req.query.returnCountOnly) {
+  if (req.query.returnCountOnly) {
     return callback(null, {
       type: "FeatureCollection",
       count: 2001,
@@ -197,9 +197,9 @@ function translate(data, query) {
 }
 
 // This function takes a single element from the yelp response and translates it to GeoJSON
-function formatFeature(biz, query) {
-  const loc = biz.location;
-  const coordinates = biz.coordinates;
+function formatFeature(business, query) {
+  const location = business.location;
+  const coordinates = business.coordinates;
   return {
     type: "Feature",
     geometry: {
@@ -207,29 +207,29 @@ function formatFeature(biz, query) {
       coordinates: [coordinates.longitude, coordinates.latitude],
     },
     properties: {
-      yelpId: biz.id,
-      alias: biz.alias,
-      name: biz.name,
-      image_url: biz.image_url,
-      is_closed: biz.is_closed,
-      url: biz.url,
-      review_count: biz.review_count,
-      categories_title: biz.categories.map((x) => x.title).join(", "),
-      categories_alias: biz.categories.map((x) => x.alias).join(", "),
-      rating: biz.rating,
-      transactions: biz.transactions,
-      phone: biz.phone,
-      display_phone: biz.display_phone,
-      distance: biz.distance,
+      yelpId: business.id,
+      alias: business.alias,
+      name: business.name,
+      image_url: business.image_url,
+      is_closed: business.is_closed,
+      url: business.url,
+      review_count: business.review_count,
+      categories_title: business.categories.map((x) => x.title).join(", "),
+      categories_alias: business.categories.map((x) => x.alias).join(", "),
+      rating: business.rating,
+      transactions: business.transactions,
+      phone: business.phone,
+      display_phone: business.display_phone,
+      distance: business.distance,
 
-      address1: loc.address1,
-      address2: loc.address2,
-      address3: loc.address3,
-      city: loc.city,
-      zip_code: loc.zip_code,
-      country: loc.country,
-      state: loc.state,
-      display_address: loc.display_address.join(", "),
+      address1: location.address1,
+      address2: location.address2,
+      address3: location.address3,
+      city: location.city,
+      zip_code: location.zip_code,
+      country: location.country,
+      state: location.state,
+      display_address: location.display_address.join(", "),
 
       term: query.term ? query.term : "", // We put a dummy term in here so ArcGIS knows this is a string field. It will allow us to filter
     },
