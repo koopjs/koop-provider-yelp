@@ -70,13 +70,10 @@ Model.prototype.getData = function (req, callback) {
 function searchYelp(query, callback) {
   client.search(query).then(
     function (rawResponse) {
-      // console.log("rawResponse", rawResponse);
       const features = translate(rawResponse.jsonBody, query);
-      console.log("Search returned", features.length, "results");
       callback(null, features);
     },
     function (err) {
-      // console.log("err", err);
       callback(err);
     }
   );
