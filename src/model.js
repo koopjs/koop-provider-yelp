@@ -16,13 +16,6 @@ function Model() {}
 // each model should have a getData() function to fetch the geo data
 // and format it into a geojson
 Model.prototype.getData = function (req, callback) {
-  if (req.query.returnCountOnly) {
-    return callback(null, {
-      type: "FeatureCollection",
-      count: 2001,
-      features: [],
-    });
-  }
   const queries = buildQueries(req.query);
   const featureCollection = {
     type: "FeatureCollection",
@@ -70,7 +63,7 @@ Model.prototype.getData = function (req, callback) {
 function searchYelp(query, callback) {
   client.search(query).then(
     function (rawResponse) {
-      const features = translate(rawResponse.jsonBody, query);
+      const features = translate(rawResponse.jsonBody, query.term);
       callback(null, features);
     },
     function (err) {
@@ -163,33 +156,33 @@ function setSort(options) {
       // Yelp API does not allow sorting by ascending order ("ASC").
       // If "ASC" order is passed, do nothing.
       return false;
-    } else {
-      // assume "DESC" sort, but remove it from the string:
-      orderByFields = orderByFields.split(" DESC")[0];
-      if (orderByFields === "best_match") {
-        return "best_match";
-      } else if (orderByFields === "rating") {
-        return "rating";
-      } else if (orderByFields === "review_count") {
-        return "review_count";
-      } else if (orderByFields === "distance") {
-        return "distance";
-      } else {
-        // order by some other column, do nothing.
-        return false;
-      }
     }
-  } else {
+
+    // assume "DESC" sort, but remove it from the string:
+    orderByFields = orderByFields.split(" DESC")[0];
+    if (orderByFields === "best_match") {
+      return "best_match";
+    }
+    if (orderByFields === "rating") {
+      return "rating";
+    }
+    if (orderByFields === "review_count") {
+      return "review_count";
+    }
+    if (orderByFields === "distance") {
+      return "distance";
+    }
     return false;
   }
+  return false;
 }
 
 // Map across all elements from a Yelp response and translate it into a feature collection
-function translate(data, query) {
+function translate(data, term) {
   // protect ourself in case the request did not return any features
   if (data.businesses) {
     return data.businesses.map((business) => {
-      return formatFeature(business, query);
+      return formatFeature(business, term);
     });
   } else {
     console.error("NO FEATURES");
@@ -197,14 +190,17 @@ function translate(data, query) {
 }
 
 // This function takes a single element from the yelp response and translates it to GeoJSON
-function formatFeature(business, query) {
-  const location = business.location;
-  const coordinates = business.coordinates;
+function formatFeature(business, term) {
+  const {
+    location,
+    coordinates: { latitude, longitude },
+  } = business;
+
   return {
     type: "Feature",
     geometry: {
       type: "Point",
-      coordinates: [coordinates.longitude, coordinates.latitude],
+      coordinates: [longitude, latitude],
     },
     properties: {
       yelpId: business.id,
@@ -231,7 +227,7 @@ function formatFeature(business, query) {
       state: location.state,
       display_address: location.display_address.join(", "),
 
-      term: query.term ? query.term : "", // We put a dummy term in here so ArcGIS knows this is a string field. It will allow us to filter
+      term: term ? term : "", // We put a dummy term in here so ArcGIS knows this is a string field. It will allow us to filter
     },
   };
 }
