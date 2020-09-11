@@ -1,7 +1,6 @@
 const yelp = require("yelp-fusion");
 const proj4 = require("proj4");
 const _ = require("lodash");
-const async = require("async");
 
 const {
   koopProviderYelp: { api_key },
@@ -16,15 +15,28 @@ function Model() {}
 // each model should have a getData() function to fetch the geo data
 // and format it into a geojson
 Model.prototype.getData = function (req, callback) {
-  const queries = buildQueries(req.query);
-  const featureCollection = {
-    type: "FeatureCollection",
-    features: [],
-  };
+  const query = buildQuery(req.query);
 
-  async.each(queries, search, finish);
+  search(query).then(
+    (features) => {
+      const featureCollection = {
+        type: "FeatureCollection",
+        metadata: {
+          name: "Yelp",
+          description: `Generated from the Yelp API.`,
+        },
+        features,
+      };
+      callback(null, featureCollection);
+    },
+    (err) => {
+      callback(err);
+    }
+  );
+};
 
-  function search(query, cb) {
+function search(query) {
+  return new Promise((resolve, reject) => {
     // If this service is added to an ArcGIS Online Map, usually it makes multiple
     // calls (4 quadrants). When you make 4 calls to the Yelp API at the same
     // time, you get a Yelp error, so for now set a random pause 0.5-2 seconds.
@@ -34,61 +46,40 @@ Model.prototype.getData = function (req, callback) {
     const randomPauseTime = Math.random() * (2500 - 500) + 500;
 
     setTimeout(() => {
-      searchYelp(query, function (err, features) {
-        if (err) return cb(err);
-        featureCollection.features = featureCollection.features.concat(
-          features
-        );
-        cb();
-      });
+      searchYelp(query).then(
+        (features) => {
+          resolve(features);
+        },
+        (err) => {
+          reject(err);
+        }
+      );
     }, randomPauseTime);
-  }
-
-  function finish(err) {
-    // Service metadata
-    featureCollection.metadata = {
-      name: "Yelp",
-      description: `Generated from the Yelp API.`,
-    };
-
-    if (err) {
-      callback(err);
-    } else {
-      callback(null, featureCollection);
-    }
-  }
-};
-
-// Wrap the call to Yelp, this will make testing easier and decouple us from the specific client lib
-function searchYelp(query, callback) {
-  client.search(query).then(
-    function (rawResponse) {
-      const features = translate(rawResponse.jsonBody, query.term);
-      callback(null, features);
-    },
-    function (err) {
-      callback(err);
-    }
-  );
+  });
 }
 
-function buildQueries(options) {
-  let queries;
-  if (options.geometry) {
-    queries = [buildQuery(options, options.geometry)];
-  } else {
-    queries = [buildQuery(options)];
-  }
-  return queries;
+// Wrap the call to Yelp, this will make testing easier and decouple us from the specific client lib
+function searchYelp(query) {
+  return new Promise((resolve, reject) => {
+    client.search(query).then(
+      (rawResponse) => {
+        const features = translate(rawResponse.jsonBody, query.term);
+        resolve(features);
+      },
+      (err) => {
+        reject(err);
+      }
+    );
+  });
 }
 
 // Translate a request from the GeoServices API into something Yelp will understand
-function buildQuery(options, geometry) {
+function buildQuery(options) {
   // we don't want to modify the passed in options object because Koop will use that later
   // also for some reason the Yelp lib chokes when there is a passed in callback so omit it
   const query = _.omit(_.cloneDeep(options), "callback");
-  if (geometry || options.geometry) {
-    const bbox = geometry || options.geometry;
+  if (options.geometry) {
+    const bbox = options.geometry;
     [query.longitude, query.latitude] = getCenter(bbox);
     query.radius = getRadius(bbox);
   } else if (!options.location) {
