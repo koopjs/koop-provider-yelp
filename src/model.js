@@ -5,6 +5,12 @@ const _ = require("lodash");
 const {
   koopProviderYelp: { api_key },
 } = require("config");
+
+if (!api_key || api_key === "") {
+  console.error(
+    "Warning: No Yelp API Key. Please see the README for information on how to generate and set the API Key."
+  );
+}
 const client = yelp.client(api_key);
 const YELP_API_MAX_RADIUS = 40000;
 
@@ -24,6 +30,16 @@ Model.prototype.getData = function (req, callback) {
         metadata: {
           name: "Yelp",
           description: `Generated from the Yelp API.`,
+        },
+        // filtersApplied tells koop if our provider has already filtered (and thus koop does not have to filter again)
+        // technically the Yelp API is returning features that are nearly filtered, but because of the nature of the
+        // Yelp API there may be features outside a bounding box, so we do want to ask Koop to filter "in addition"
+        // to the Yelp filter.
+        filtersApplied: {
+          geometry: false,
+          where: true,
+          offset: false,
+          limit: false,
         },
         features,
       };
