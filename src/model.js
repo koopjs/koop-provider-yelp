@@ -94,7 +94,11 @@ function buildQuery(options) {
   // we don't want to modify the passed in options object because Koop will use that later
   // also for some reason the Yelp lib chokes when there is a passed in callback so omit it
   const query = _.omit(_.cloneDeep(options), "callback");
-  if (options.geometry) {
+  if (
+    options.geometryType &&
+    options.geometry &&
+    options.geometryType === "esriGeometryEnvelope"
+  ) {
     const bbox = options.geometry;
     [query.longitude, query.latitude] = getCenter(bbox);
     query.radius = getRadius(bbox);
@@ -118,8 +122,26 @@ function buildQuery(options) {
  * @param {object} bbox
  */
 function getCenter(bbox) {
-  const x = (bbox.xmax + bbox.xmin) / 2;
-  const y = (bbox.ymax + bbox.ymin) / 2;
+  let xmin, ymin, xmax, ymax;
+
+  if (typeof bbox === "string") {
+    const parts = bbox.split(",");
+    if (parts.length === 4) {
+      [xmin, ymin, xmax, ymax] = parts.map((x) => parseFloat(x));
+    } else {
+      // invalid format, set to 0,0
+      console.error("Invalid format");
+      [xmin, ymin, xmax, ymax] = [0, 0, 0, 0];
+    }
+  } else if (bbox && bbox.xmax && bbox.xmin && bbox.ymax && bbox.ymin) {
+    ({ xmin, ymin, xmax, ymax } = bbox);
+  } else {
+    // invalid format, set to 0,0
+    console.error("Invalid format");
+    [xmin, ymin, xmax, ymax] = [0, 0, 0, 0];
+  }
+  const x = (xmax + xmin) / 2;
+  const y = (ymax + ymin) / 2;
 
   return proj.forward([x, y]);
 }
