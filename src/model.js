@@ -122,6 +122,20 @@ function buildQuery(options) {
  * @param {object} bbox
  */
 function getCenter(bbox) {
+  const [xmin, ymin, xmax, ymax] = getBBox(bbox);
+
+  const x = (xmax + xmin) / 2;
+  const y = (ymax + ymin) / 2;
+
+  return proj.forward([x, y]);
+}
+
+/**
+ * Input bbox may be in full JSON or shortened version. This function
+ * normalizes to give same results for both formats. Returns 0,0 if bad format.
+ * @param {string | object} bbox
+ */
+function getBBox(bbox) {
   let xmin, ymin, xmax, ymax;
 
   if (typeof bbox === "string") {
@@ -140,10 +154,8 @@ function getCenter(bbox) {
     console.error("Invalid format");
     [xmin, ymin, xmax, ymax] = [0, 0, 0, 0];
   }
-  const x = (xmax + xmin) / 2;
-  const y = (ymax + ymin) / 2;
 
-  return proj.forward([x, y]);
+  return [xmin, ymin, xmax, ymax];
 }
 
 /**
@@ -152,8 +164,10 @@ function getCenter(bbox) {
  * @param {object} bbox
  */
 function getRadius(bbox) {
-  const halfX = Math.abs(bbox.xmax - bbox.xmin);
-  const halfY = Math.abs(bbox.ymax - bbox.ymin);
+  const [xmin, ymin, xmax, ymax] = getBBox(bbox);
+
+  const halfX = Math.abs(xmax - xmin);
+  const halfY = Math.abs(ymax - ymin);
 
   const radius = Math.sqrt(Math.pow(halfX, 2) + Math.pow(halfY, 2));
   let roundedRadius = Math.round(radius);
