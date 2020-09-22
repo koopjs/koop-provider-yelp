@@ -23,6 +23,13 @@ function Model() {}
 Model.prototype.getData = function (req, callback) {
   const query = buildQuery(req.query);
 
+  if (!query) {
+    // invalid inputs - return 400
+    const error = new Error("Bad Request");
+    error.status = 400;
+    callback(error);
+  }
+
   search(query).then(
     (features) => {
       const featureCollection = {
@@ -99,9 +106,14 @@ function buildQuery(options) {
     options.geometry &&
     options.geometryType === "esriGeometryEnvelope"
   ) {
-    const bbox = options.geometry;
-    [query.longitude, query.latitude] = getCenter(bbox);
-    query.radius = getRadius(bbox);
+    const bbox = getBBox(options.geometry);
+    if (bbox) {
+      [query.longitude, query.latitude] = getCenter(bbox);
+      query.radius = getRadius(bbox);
+    } else {
+      // invalid geometry - return false;
+      return false;
+    }
   } else if (!options.location) {
     query.location = "St. Louis, MO";
   }
@@ -122,10 +134,8 @@ function buildQuery(options) {
  * @param {object} bbox
  */
 function getCenter(bbox) {
-  const [xmin, ymin, xmax, ymax] = getBBox(bbox);
-
-  const x = (xmax + xmin) / 2;
-  const y = (ymax + ymin) / 2;
+  const x = (bbox.xmax + bbox.xmin) / 2;
+  const y = (bbox.ymax + bbox.ymin) / 2;
 
   return proj.forward([x, y]);
 }
@@ -143,19 +153,19 @@ function getBBox(bbox) {
     if (parts.length === 4) {
       [xmin, ymin, xmax, ymax] = parts.map((x) => parseFloat(x));
     } else {
-      // invalid format, set to 0,0
+      // invalid format
       console.error("Invalid format");
-      [xmin, ymin, xmax, ymax] = [0, 0, 0, 0];
+      return false;
     }
   } else if (bbox && bbox.xmax && bbox.xmin && bbox.ymax && bbox.ymin) {
     ({ xmin, ymin, xmax, ymax } = bbox);
   } else {
-    // invalid format, set to 0,0
+    // invalid format
     console.error("Invalid format");
-    [xmin, ymin, xmax, ymax] = [0, 0, 0, 0];
+    return false;
   }
 
-  return [xmin, ymin, xmax, ymax];
+  return { xmin, ymin, xmax, ymax };
 }
 
 /**
@@ -164,10 +174,8 @@ function getBBox(bbox) {
  * @param {object} bbox
  */
 function getRadius(bbox) {
-  const [xmin, ymin, xmax, ymax] = getBBox(bbox);
-
-  const halfX = Math.abs(xmax - xmin);
-  const halfY = Math.abs(ymax - ymin);
+  const halfX = Math.abs(bbox.xmax - bbox.xmin);
+  const halfY = Math.abs(bbox.ymax - bbox.ymin);
 
   const radius = Math.sqrt(Math.pow(halfX, 2) + Math.pow(halfY, 2));
   let roundedRadius = Math.round(radius);
