@@ -32,7 +32,7 @@
   "license": "Apache",
   "repository": {
     "type": "git",
-    "url": "https://github.com:koopjs/koop-provider-yelp.git"
+    "url": "https://github.com/koopjs/koop-provider-yelp.git"
   },
   "bugs": {
     "url": "https://github.com/koopjs/koop-provider-yelp/issues"
