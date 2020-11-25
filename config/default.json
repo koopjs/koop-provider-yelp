@@ -1,5 +1,6 @@
 {
   "koopProviderYelp": {
-    "api_key": ""
+    "api_key": "",
+    "defaultLocation": ""
   }
 }
