@@ -44,7 +44,7 @@ Model.prototype.getData = function (req, callback) {
         // to the Yelp filter.
         filtersApplied: {
           geometry: false,
-          where: true,
+          where: false,
           offset: false,
           limit: false,
         },
@@ -86,7 +86,7 @@ function searchYelp(query) {
   return new Promise((resolve, reject) => {
     client.search(query).then(
       (rawResponse) => {
-        const features = translate(rawResponse.jsonBody, query.term);
+        const features = translate(rawResponse.jsonBody, query.term, query.location);
         resolve(features);
       },
       (err) => {
@@ -101,32 +101,50 @@ function buildQuery(options) {
   // we don't want to modify the passed in options object because Koop will use that later
   // also for some reason the Yelp lib chokes when there is a passed in callback so omit it
   const query = _.omit(_.cloneDeep(options), "callback");
-  if (
-    options.geometryType &&
-    options.geometry &&
-    options.geometryType === "esriGeometryEnvelope"
-  ) {
-    const bbox = getBBox(options.geometry);
-    if (bbox) {
-      [query.longitude, query.latitude] = getCenter(bbox);
-      query.radius = getRadius(bbox);
-    } else {
-      // invalid geometry - return false;
-      return false;
+  // const query = {};
+
+  const location = setLocation(options);
+  if(location) {
+    query.location = location;
+  } else {
+    // only add on lat/lon based on current bounding box if a location attribute
+    // is not sent in - this is because the Yelp API does not honor a location
+    // attribute if a lat/lon are sent in - it must be one or the other.
+    if (
+      options.geometryType &&
+      options.geometry &&
+      options.geometryType === "esriGeometryEnvelope"
+    ) {
+      const bbox = getBBox(options.geometry);
+      if (bbox) {
+        [query.longitude, query.latitude] = getCenter(bbox);
+        query.radius = getRadius(bbox);
+      } else {
+        // invalid geometry - return false;
+        return false;
+      }
+    } else if (!options.location) {
+      query.location =
+        defaultLocation && defaultLocation !== ""
+          ? defaultLocation
+          : "St. Louis, MO";
     }
-  } else if (!options.location) {
-    query.location =
-      defaultLocation && defaultLocation !== ""
-        ? defaultLocation
-        : "St. Louis, MO";
   }
-  query.term = setTerm(options);
+
+
+  const term = setTerm(options);
+  if(term) {
+    query.term = term;
+  }
+
+  
   const sort = setSort(options);
   if (sort) {
     query.sort_by = sort;
   }
 
   query.limit = 50;
+  // console.log('returning query:', JSON.stringify(query));
   return query;
 }
 
@@ -195,7 +213,13 @@ function getRadius(bbox) {
 // 'where term = 'restaurants' => restaurants
 function setTerm(options) {
   if (!options.where) return null;
-  const match = options.where.match(/.+\s*=\s*'(.+)'/);
+  const match = options.where.match(/term.+?\s*=\s*?'(.+?)'/);
+  return match ? match[1] : null;
+}
+
+function setLocation(options) {
+  if (!options.where) return null;
+  const match = options.where.match(/location.+?\s*=\s*?'(.+?)'/);
   return match ? match[1] : null;
 }
 
@@ -232,11 +256,11 @@ function setSort(options) {
 }
 
 // Map across all elements from a Yelp response and translate it into a feature collection
-function translate(data, term) {
+function translate(data, term, locationString) {
   // protect ourself in case the request did not return any features
   if (data.businesses) {
     return data.businesses.map((business) => {
-      return formatFeature(business, term);
+      return formatFeature(business, term, locationString);
     });
   }
   // else:
@@ -244,7 +268,8 @@ function translate(data, term) {
 }
 
 // This function takes a single element from the yelp response and translates it to GeoJSON
-function formatFeature(business, term) {
+function formatFeature(business, term, locationString) {
+  console.log('formatFeature', business, term);
   const {
     location,
     coordinates: { latitude, longitude },
@@ -282,6 +307,7 @@ function formatFeature(business, term) {
       display_address: location.display_address.join(", "),
 
       term: term ? term : "", // We put a dummy term in here so ArcGIS knows this is a string field. It will allow us to filter
+      location: locationString ? locationString : "", // We put a dummy term in here so ArcGIS knows this is a string field. It will allow us to filter
     },
   };
 }
