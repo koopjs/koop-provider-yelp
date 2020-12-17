@@ -9,12 +9,14 @@ Koop plugins use the [node-config module](https://www.npmjs.com/package/config) 
 ```json
 {
   "koopProviderYelp": {
-    "api_key": "your_api_key"
+    "api_key": "your_api_key",
+    "defaultLocation": ""
   }
 }
 ```
 
-Get your API Key from the [Yelp API Management Console](https://www.yelp.com/developers/v3/manage_app).
+- Get your API Key from the [Yelp API Management Console](https://www.yelp.com/developers/v3/manage_app).
+- Location is required by the Yelp API, so if no initial geometry is provided, this is the default location that will be passed to the API.
 
 ## Options
 

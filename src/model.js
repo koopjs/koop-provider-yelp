@@ -3,7 +3,7 @@ const proj4 = require("proj4");
 const _ = require("lodash");
 
 const {
-  koopProviderYelp: { api_key },
+  koopProviderYelp: { api_key, defaultLocation },
 } = require("config");
 
 if (!api_key || api_key === "") {
@@ -115,7 +115,10 @@ function buildQuery(options) {
       return false;
     }
   } else if (!options.location) {
-    query.location = "St. Louis, MO";
+    query.location =
+      defaultLocation && defaultLocation !== ""
+        ? defaultLocation
+        : "St. Louis, MO";
   }
   query.term = setTerm(options);
   const sort = setSort(options);
